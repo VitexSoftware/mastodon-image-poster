@@ -1,0 +1,23 @@
+Source: mastodon-image-poster
+Section: net
+Priority: optional
+Maintainer: Vítězslav Dvořák <info@vitexsoftware.cz>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Homepage: https://github.com/VitexSoftware/mastodon-image-poster
+Rules-Requires-Root: no
+Vcs-Git: https://github.com/VitexSoftware/mastodon-image-poster.git
+Vcs-Browser: https://github.com/VitexSoftware/mastodon-image-poster
+
+Package: mastodon-image-poster
+Architecture: all
+Multi-Arch: foreign
+Depends:
+ ${misc:Depends},
+ python3,
+ python3-mastodon
+Description: Daily automatic image posting to Mastodon
+ A systemd timer-driven service that posts one image per day from a
+ configured directory to a Mastodon instance. Supports sorting by
+ filename, file size or creation time. Tracks state to resume after
+ restart without re-posting already sent images.

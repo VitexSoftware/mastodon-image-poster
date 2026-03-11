@@ -1,0 +1,34 @@
+Template: mastodon-image-poster/image_directory
+Type: string
+Default: /srv/images
+Description: Directory containing images to post:
+ Please enter the full path to the directory containing images that
+ should be posted to Mastodon.
+
+Template: mastodon-image-poster/sort_order
+Type: select
+Default: name
+Choices: name, size, time
+Description: Image sorting order:
+ Choose how images should be sorted before posting.
+ name = alphabetical, size = by file size, time = by creation time.
+
+Template: mastodon-image-poster/instance_url
+Type: string
+Default: https://mastodon.social
+Description: Mastodon instance URL:
+ Please enter the URL of the Mastodon instance to post to.
+
+Template: mastodon-image-poster/access_token
+Type: password
+Description: Mastodon API access token:
+ Please enter the access token for the Mastodon API.
+ You can generate one in Mastodon under
+ Preferences > Development > New application.
+
+Template: mastodon-image-poster/status_text
+Type: string
+Default:
+Description: Status text for each post (optional):
+ If empty, the image filename (without extension) will be used as
+ the status text.

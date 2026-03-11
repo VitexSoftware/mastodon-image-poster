@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove|purge)
+        if [ -d /run/systemd/system ]; then
+            systemctl stop mastodon-image-poster.timer || true
+            systemctl disable mastodon-image-poster.timer || true
+        fi
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0
