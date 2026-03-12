@@ -1,0 +1,7 @@
+debian/.debhelper/
+debian/mastodon-image-poster/
+debian/debhelper-build-stamp
+debian/files
+debian/*.debhelper
+debian/*.substvars
+debian/*.postrm.debhelper

@@ -1,7 +1,0 @@
-mastodon-image-poster (0.1.0) UNRELEASED; urgency=low
-
-  * Initial release
-  * Daily image posting to Mastodon with state persistence
-  * Debconf configuration for image directory, sort order, credentials
-
- -- Vítězslav Dvořák <info@vitexsoftware.cz>  Wed, 12 Mar 2025 00:00:00 +0100

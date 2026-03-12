@@ -1,6 +1,0 @@
-9be881db03a574d4f5eb7c9fe7723834  usr/bin/mastodon_image_poster.py
-287e0a6410e65956b5e9dadf28d92aa5  usr/lib/systemd/system/mastodon-image-poster.service
-73023d680184d2571dd81b1df6826b33  usr/lib/systemd/system/mastodon-image-poster.timer
-ffa46d3989947586664025a94b8089e0  usr/share/doc/mastodon-image-poster/changelog.gz
-463a106a719221e56a6bdd3791dc57f5  usr/share/doc/mastodon-image-poster/copyright
-cd0ced27a01588d54d3e88c393914ead  usr/share/mastodon-image-poster/example.ini
