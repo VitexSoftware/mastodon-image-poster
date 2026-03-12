@@ -1,0 +1,12 @@
+[Unit]
+Description=Post an image to Mastodon
+Wants=mastodon-image-poster.timer
+After=network-online.target
+Requires=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/mastodon_image_poster.py
+
+[Install]
+WantedBy=multi-user.target

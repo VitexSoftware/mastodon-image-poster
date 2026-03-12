@@ -6,7 +6,6 @@ import json
 import logging
 import os
 import sys
-import time
 
 from mastodon import Mastodon
 
@@ -109,24 +108,10 @@ def find_next_image(images: list[str], last_posted: str | None) -> str | None:
     return images[0]
 
 
-def wait_for_media(mastodon: Mastodon, media_id: int, max_wait: int = 60) -> None:
-    """Wait until media attachment is processed on the server."""
-    for attempt in range(max_wait // 2):
-        media_info = mastodon.media(media_id)
-        if media_info.get("url") is not None:
-            return
-        log.info("Media %s still processing, waiting... (%d)", media_id, attempt + 1)
-        time.sleep(2)
-    log.warning("Media %s may not be fully processed after %ds, posting anyway.", media_id, max_wait)
-
-
 def post_image(mastodon: Mastodon, image_path: str, status_text: str) -> None:
     """Upload an image and create a status on Mastodon."""
     log.info("Uploading: %s", image_path)
     media = mastodon.media_post(image_path)
-
-    log.info("Waiting for media %s to be processed...", media["id"])
-    wait_for_media(mastodon, media["id"])
 
     description = status_text if status_text else os.path.splitext(os.path.basename(image_path))[0]
     log.info("Posting status with media id %s", media["id"])

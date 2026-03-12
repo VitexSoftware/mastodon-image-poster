@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove|purge)
+        if [ -d /run/systemd/system ]; then
+            systemctl stop mastodon-image-poster.timer || true
+            systemctl disable mastodon-image-poster.timer || true
+        fi
+        ;;
+esac
+
+# Automatically added by dh_installsystemd/13.24.2
+if [ -z "$DPKG_ROOT" ] && [ "$1" = remove ] && [ -d /run/systemd/system ] ; then
+	deb-systemd-invoke stop 'mastodon-image-poster.service' 'mastodon-image-poster.timer' >/dev/null || true
+fi
+# End automatically added section
+
+
+exit 0
