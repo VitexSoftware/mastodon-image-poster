@@ -7,8 +7,12 @@ import logging
 import os
 import sys
 import time
+from datetime import datetime
 
+from geopy.geocoders import Nominatim
 from mastodon import Mastodon
+from PIL import Image
+from PIL.ExifTags import TAGS, GPSTAGS
 
 CONFIG_PATH = "/etc/mastodon-image-poster/config.ini"
 STATE_PATH = "/var/lib/mastodon-image-poster/state.json"
@@ -120,6 +124,121 @@ def wait_for_media(mastodon: Mastodon, media_id: int, max_wait: int = 60) -> Non
     log.warning("Media %s may not be fully processed after %ds, posting anyway.", media_id, max_wait)
 
 
+def _get_exif_data(image_path: str) -> dict:
+    """Extract EXIF data from an image file."""
+    try:
+        img = Image.open(image_path)
+        exif_raw = img._getexif()
+        if exif_raw is None:
+            return {}
+        return {TAGS.get(tag, tag): value for tag, value in exif_raw.items()}
+    except Exception as exc:
+        log.debug("Could not read EXIF data from %s: %s", image_path, exc)
+        return {}
+
+
+def _get_date_taken(exif_data: dict) -> str | None:
+    """Return the date the photo was taken, formatted nicely."""
+    for field in ("DateTimeOriginal", "DateTimeDigitized", "DateTime"):
+        raw = exif_data.get(field)
+        if raw:
+            try:
+                dt = datetime.strptime(str(raw), "%Y:%m:%d %H:%M:%S")
+                return dt.strftime("%Y-%m-%d")
+            except (ValueError, TypeError):
+                continue
+    return None
+
+
+def _gps_dms_to_decimal(dms, ref: str) -> float:
+    """Convert GPS coordinates from degrees/minutes/seconds to decimal."""
+    degrees = float(dms[0])
+    minutes = float(dms[1])
+    seconds = float(dms[2])
+    decimal = degrees + minutes / 60.0 + seconds / 3600.0
+    if ref in ("S", "W"):
+        decimal = -decimal
+    return decimal
+
+
+def _get_gps_coordinates(exif_data: dict) -> tuple[float, float] | None:
+    """Extract GPS latitude and longitude from EXIF data."""
+    gps_info = exif_data.get("GPSInfo")
+    if not gps_info:
+        return None
+
+    # Resolve GPSInfo tag IDs to human-readable names
+    gps_data = {}
+    for tag_id, value in gps_info.items():
+        tag_name = GPSTAGS.get(tag_id, tag_id)
+        gps_data[tag_name] = value
+
+    try:
+        lat = _gps_dms_to_decimal(gps_data["GPSLatitude"], gps_data["GPSLatitudeRef"])
+        lon = _gps_dms_to_decimal(gps_data["GPSLongitude"], gps_data["GPSLongitudeRef"])
+        return (lat, lon)
+    except (KeyError, TypeError, IndexError) as exc:
+        log.debug("Incomplete GPS data: %s", exc)
+        return None
+
+
+def _reverse_geocode(lat: float, lon: float) -> str | None:
+    """Reverse-geocode GPS coordinates to a human-readable address."""
+    try:
+        geolocator = Nominatim(user_agent="mastodon-image-poster")
+        location = geolocator.reverse(f"{lat}, {lon}", language="en", addressdetails=True)
+        if location is None:
+            return None
+
+        addr = location.raw.get("address", {})
+        parts: list[str] = []
+
+        # Street and house number
+        street = addr.get("road") or addr.get("pedestrian") or addr.get("footway", "")
+        house_number = addr.get("house_number", "")
+        if street:
+            parts.append(f"{street} {house_number}".strip())
+
+        # City
+        city = (
+            addr.get("city")
+            or addr.get("town")
+            or addr.get("village")
+            or addr.get("municipality", "")
+        )
+        if city:
+            parts.append(city)
+
+        return ", ".join(parts) if parts else None
+    except Exception as exc:
+        log.warning("Reverse geocoding failed: %s", exc)
+        return None
+
+
+def build_status_text(image_path: str, base_text: str) -> str:
+    """Build status text enriched with EXIF date and location."""
+    exif_data = _get_exif_data(image_path)
+    if not exif_data:
+        return base_text or os.path.splitext(os.path.basename(image_path))[0]
+
+    extra_parts: list[str] = []
+
+    date_taken = _get_date_taken(exif_data)
+    if date_taken:
+        extra_parts.append(f"\U0001F4C5 {date_taken}")
+
+    coords = _get_gps_coordinates(exif_data)
+    if coords:
+        address = _reverse_geocode(*coords)
+        if address:
+            extra_parts.append(f"\U0001F4CD {address}")
+
+    extra_parts.append("\U0001F517 Posted by https://github.com/VitexSoftware/mastodon-image-poster")
+
+    status = base_text if base_text else os.path.splitext(os.path.basename(image_path))[0]
+    return f"{status}\n\n" + "\n".join(extra_parts)
+
+
 def post_image(mastodon: Mastodon, image_path: str, status_text: str) -> None:
     """Upload an image and create a status on Mastodon."""
     log.info("Uploading: %s", image_path)
@@ -128,7 +247,7 @@ def post_image(mastodon: Mastodon, image_path: str, status_text: str) -> None:
     log.info("Waiting for media %s to be processed...", media["id"])
     wait_for_media(mastodon, media["id"])
 
-    description = status_text if status_text else os.path.splitext(os.path.basename(image_path))[0]
+    description = build_status_text(image_path, status_text)
     log.info("Posting status with media id %s", media["id"])
     mastodon.status_post(description, media_ids=[media["id"]])
 
