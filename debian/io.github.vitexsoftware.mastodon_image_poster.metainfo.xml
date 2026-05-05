@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="service">
+  <id>io.github.vitexsoftware.mastodon_image_poster</id>
+  <icon type="stock">mastodon-image-poster</icon>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Mastodon Image Poster</name>
+  <summary>Daily automatic image posting to Mastodon</summary>
+  <description>
+    <p>
+      A systemd timer-driven service that posts one image per day from a configured directory to a Mastodon instance. Supports sorting by filename, file size or creation time. Tracks state to resume after restart without re-posting already sent images.
+    </p>
+  </description>
+  <categories>
+    <category>Network</category>
+  </categories>
+  <url type="homepage">https://github.com/VitexSoftware/mastodon-image-poster</url>
+  <url type="bugtracker">https://github.com/VitexSoftware/mastodon-image-poster/issues</url>
+  <developer id="cz.vitexsoftware">
+    <name>VitexSoftware</name>
+  </developer>
+  <content_rating type="oars-1.1"/>
+</component>
