@@ -1,4 +1,4 @@
-mastodon-image-poster (0.1.0) UNRELEASED; urgency=low
+mastodon-image-poster (0.2.0) UNRELEASED; urgency=low
 
   * Initial release
   * Daily image posting to Mastodon with state persistence
