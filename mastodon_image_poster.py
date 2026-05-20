@@ -14,8 +14,21 @@ from mastodon import Mastodon
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 
-CONFIG_PATH = "/etc/mastodon-image-poster/config.ini"
-STATE_PATH = "/var/lib/mastodon-image-poster/state.json"
+_xdg_config_home = os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
+_xdg_data_home = os.environ.get("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
+_user_config = os.path.join(_xdg_config_home, "mastodon-image-poster", "config.ini")
+_using_user_config = os.path.isfile(_user_config) or "MASTODON_IMAGE_POSTER_CONFIG" in os.environ
+
+CONFIG_PATH = os.environ.get(
+    "MASTODON_IMAGE_POSTER_CONFIG",
+    _user_config if os.path.isfile(_user_config) else "/etc/mastodon-image-poster/config.ini",
+)
+STATE_PATH = os.environ.get(
+    "MASTODON_IMAGE_POSTER_STATE",
+    os.path.join(_xdg_data_home, "mastodon-image-poster", "state.json")
+    if _using_user_config
+    else "/var/lib/mastodon-image-poster/state.json",
+)
 SUPPORTED_EXTENSIONS = (".jpg", ".jpeg", ".png", ".gif", ".webp")
 
 logging.basicConfig(

@@ -2,6 +2,12 @@ mastodon-image-poster (0.2.1) UNRELEASED; urgency=low
 
   * fix: always append date and "Posted by" link even when images have no EXIF
     data; fall back to file modification time for the date
+  * feat: support per-user configuration via XDG paths
+    (~/.config/mastodon-image-poster/config.ini detected automatically,
+    state stored in ~/.local/share/mastodon-image-poster/state.json);
+    both paths overridable via MASTODON_IMAGE_POSTER_CONFIG /
+    MASTODON_IMAGE_POSTER_STATE environment variables
+  * docs: add per-user / systemctl --user setup guide to README
 
  -- Vítězslav Dvořák <info@vitexsoftware.cz>  Tue, 20 May 2026 00:00:00 +0200
 
