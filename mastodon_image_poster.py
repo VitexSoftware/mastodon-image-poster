@@ -218,20 +218,20 @@ def _reverse_geocode(lat: float, lon: float) -> str | None:
 def build_status_text(image_path: str, base_text: str) -> str:
     """Build status text enriched with EXIF date and location."""
     exif_data = _get_exif_data(image_path)
-    if not exif_data:
-        return base_text or os.path.splitext(os.path.basename(image_path))[0]
-
     extra_parts: list[str] = []
 
-    date_taken = _get_date_taken(exif_data)
-    if date_taken:
-        extra_parts.append(f"\U0001F4C5 {date_taken}")
+    date_taken = _get_date_taken(exif_data) if exif_data else None
+    if not date_taken:
+        mtime = os.path.getmtime(image_path)
+        date_taken = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d")
+    extra_parts.append(f"\U0001F4C5 {date_taken}")
 
-    coords = _get_gps_coordinates(exif_data)
-    if coords:
-        address = _reverse_geocode(*coords)
-        if address:
-            extra_parts.append(f"\U0001F4CD {address}")
+    if exif_data:
+        coords = _get_gps_coordinates(exif_data)
+        if coords:
+            address = _reverse_geocode(*coords)
+            if address:
+                extra_parts.append(f"\U0001F4CD {address}")
 
     extra_parts.append("\U0001F517 Posted by https://github.com/VitexSoftware/mastodon-image-poster")
 
